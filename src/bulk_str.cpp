@@ -8,7 +8,6 @@ extern std::vector<Node> tree;
 
 std::vector<Entry> buildSTR(std::vector<Entry> entries) {
 
-    // 🔥 CASO BASE PRIMERO
     if (entries.size() <= B) {
         return entries;
     }

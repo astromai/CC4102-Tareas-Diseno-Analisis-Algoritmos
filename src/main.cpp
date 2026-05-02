@@ -77,9 +77,6 @@ int main() {
 
                 cout << "    rootEntries: " << rootEntries.size() << endl;
 
-                // 🔥 CORRECCIÓN CLAVE:
-                // NO insertar la raíz al inicio ni desplazar índices
-
                 Node root;
                 root.k = rootEntries.size();
 
@@ -124,7 +121,7 @@ int main() {
                         vector<MBR> res;
 
                         disk_reads = 0;
-                        rangeQuery(file, rootIdx, R, res); // 🔥 usar rootIdx
+                        rangeQuery(file, rootIdx, R, res); 
 
                         ios.push_back(disk_reads);
                         pts.push_back(res.size());
