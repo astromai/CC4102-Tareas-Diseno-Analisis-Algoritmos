@@ -15,33 +15,6 @@ El objetivo es comparar su rendimiento en:
 
 ---
 
-## Estructura del Proyecto
-tarea/
-│
-├── README.md
-│
-├── data/
-│ ├── random.bin
-│ ├── europe.bin
-│
-├── src/
-│ ├── main.cpp # Ejecuta toda la experimentación
-│ ├── node.h # Definición de estructuras
-│ ├── bulk_nearest_x.cpp # Algoritmo Nearest-X
-│ ├── bulk_str.cpp # Algoritmo STR
-│ ├── query.cpp # Consultas sobre el árbol
-│ ├── io.cpp # Lectura/escritura en disco
-│ ├── utils.cpp # Funciones auxiliares
-│
-├── results/
-│ ├── build_times.csv # Resultados de construcción
-│ ├── query_results.csv # Resultados de consultas
-│
-└── scripts/
-├── plot.py # Generación de gráficos
-
----
-
 ## Compilación
 
 Compilar el proyecto con:
