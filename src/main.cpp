@@ -22,7 +22,7 @@ extern int disk_reads;
  * @file main.cpp
  * @brief Programa principal para benchmark de construcción y consultas sobre R-tree.
  *
- * Este archivo orquesta dos fases experimentales:
+ * Este archivo cuenta con dos fases experimentales:
  * 1) Construcción de árboles para distintos tamaños N, datasets y métodos de bulk-loading.
  * 2) Ejecución de consultas de rango sobre los árboles más grandes (N = 2^24),
  *    registrando costo de I/O y cardinalidad de resultados.
