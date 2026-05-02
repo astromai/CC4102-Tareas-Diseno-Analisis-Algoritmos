@@ -15,7 +15,7 @@ for dataset in df["dataset"].unique():
     plt.xlabel("N")
     plt.ylabel("Tiempo (ms)")
     plt.legend()
-    plt.xscale("log")
+    plt.xscale("log", base=2)
     plt.savefig(f"../results/build_{dataset}.png")
     plt.clf()
 
