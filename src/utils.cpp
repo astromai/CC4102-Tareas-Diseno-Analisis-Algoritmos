@@ -5,11 +5,8 @@
 /**
  * @brief Verifica si dos rectángulos delimitadores se solapan
  * 
- * Implementación eficiente usando la prueba de separación en ejes (SAT):
  * Dos rectángulos se solapan si y solo si se solapan en AMBOS ejes X e Y.
  * Equivalentemente, NO se solapan si están separados en al menos un eje.
- * 
- * Complejidad: O(1)
  * 
  * @param a Primer rectángulo
  * @param b Segundo rectángulo
@@ -19,13 +16,12 @@ bool intersects(MBR a, MBR b) {
     return !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
 }
 
+
 /**
  * @brief Combina dos rectángulos en su envolvente común
  * 
  * Calcula el rectángulo más pequeño que contiene completamente a ambos
  * rectángulos de entrada. Los valores extremos se toman por eje.
- * 
- * Complejidad: O(1)
  * 
  * @param a Primer rectángulo
  * @param b Segundo rectángulo
@@ -40,13 +36,12 @@ MBR combine(MBR a, MBR b) {
     };
 }
 
+
 /**
  * @brief Computa el MBR envolvente de un grupo de entries
  * 
  * Itera secuencialmente sobre todas las entries, combinando sus MBRs
  * mediante aplicación repetida de combine().
- * 
- * Complejidad: O(n) donde n es el tamaño del grupo
  * 
  * @param group Vector de entries (precondición: no vacío)
  * @return MBR que contiene la unión de todos los MBRs del grupo
