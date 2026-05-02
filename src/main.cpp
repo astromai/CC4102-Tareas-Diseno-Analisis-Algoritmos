@@ -25,6 +25,9 @@ int main() {
 
     cout << "=== START ===" << endl;
 
+    // Crear carpeta results si no existe
+    system("mkdir -p results");
+
     ofstream build_out("results/build_times.csv");
     ofstream query_out("results/query_results.csv");
 
@@ -36,16 +39,23 @@ int main() {
     build_out << "N,metodo,dataset,tiempo_ms\n";
     query_out << "metodo,dataset,s,avg_io,avg_points,std_points\n";
 
+    // N hasta 2^24
     vector<int> Ns;
-    for (int i = 15; i <= 17; i++) Ns.push_back(1<<i);
+    for (int i = 15; i <= 24; i++) Ns.push_back(1 << i);
 
-    vector<float> Ss = {0.01, 0.05};
+    // Valores de s
+    vector<float> Ss = {0.0025f, 0.005f, 0.01f, 0.025f, 0.05f};
 
-    for (auto dataset : {"data/random.bin","data/europa.bin"}) {
+    vector<string> datasets = {"data/random.bin", "data/europa.bin"};
 
-        string dname = (string(dataset).find("random")!=string::npos)?"random":"europa";
+   
+    // FASE 1: Construcción para todos los N
+    for (auto dataset : datasets) {
 
-        cout << "\nDataset: " << dname << endl;
+        string dname = (string(dataset).find("random") != string::npos)
+                       ? "random" : "europa";
+
+        cout << "\n[CONSTRUCCION] Dataset: " << dname << endl;
 
         for (auto N : Ns) {
 
@@ -53,14 +63,12 @@ int main() {
 
             auto points = readPoints(dataset, N);
 
-            cout << "  puntos leídos: " << points.size() << endl;
-
             if (points.empty()) {
                 cout << "  ERROR: no se leyeron puntos" << endl;
                 continue;
             }
 
-            for (auto metodo : {"nearest","str"}) {
+            for (auto metodo : {"nearest", "str"}) {
 
                 cout << "    metodo: " << metodo << endl;
 
@@ -70,19 +78,13 @@ int main() {
 
                 vector<Entry> rootEntries;
 
-                if (string(metodo)=="nearest")
+                if (string(metodo) == "nearest")
                     rootEntries = buildNearestX(points);
                 else
                     rootEntries = buildSTR(points);
 
-                cout << "    rootEntries: " << rootEntries.size() << endl;
-
-                // 🔥 CORRECCIÓN CLAVE:
-                // NO insertar la raíz al inicio ni desplazar índices
-
                 Node root;
                 root.k = rootEntries.size();
-
                 for (int i = 0; i < root.k; i++)
                     root.entries[i] = rootEntries[i];
 
@@ -90,68 +92,107 @@ int main() {
                 tree.push_back(root);
 
                 auto end = chrono::high_resolution_clock::now();
-                int time = chrono::duration_cast<chrono::milliseconds>(end-start).count();
+                int ms = chrono::duration_cast<chrono::milliseconds>(end - start).count();
 
-                cout << "    tiempo: " << time << " ms" << endl;
+                build_out << N << "," << metodo << "," << dname << "," << ms << "\n";
 
-                build_out << N << "," << metodo << "," << dname << "," << time << "\n";
+                cout << "    tiempo: " << ms << " ms" << endl;
 
-                string fname = "results/tree_" + dname + "_" + metodo + ".bin";
-                writeTree(fname, tree);
-
-                cout << "    árbol guardado en: " << fname << endl;
-
-                for (auto s : Ss) {
-
-                    cout << "      query s=" << s << endl;
-
-                    vector<int> ios;
-                    vector<int> pts;
-
-                    for (int q = 0; q < 10; q++) {
-
-                        float x = randFloat()*(1-s);
-                        float y = randFloat()*(1-s);
-
-                        MBR R = {x, x+s, y, y+s};
-
-                        ifstream file(fname, ios::binary);
-                        if (!file.is_open()) {
-                            cout << "ERROR abriendo archivo binario" << endl;
-                            continue;
-                        }
-
-                        vector<MBR> res;
-
-                        disk_reads = 0;
-                        rangeQuery(file, rootIdx, R, res); // 🔥 usar rootIdx
-
-                        ios.push_back(disk_reads);
-                        pts.push_back(res.size());
-                    }
-
-                    double avg_io=0, avg_pts=0;
-                    for (int x:ios) avg_io+=x;
-                    for (int x:pts) avg_pts+=x;
-
-                    avg_io/=ios.size();
-                    avg_pts/=pts.size();
-
-                    double std=0;
-                    for (int x:pts) std+=(x-avg_pts)*(x-avg_pts);
-                    std = sqrt(std/pts.size());
-
-                    query_out << metodo << "," << dname << "," << s << ","
-                              << avg_io << "," << avg_pts << "," << std << "\n";
+                // Guardar árbol para N=2^24
+                if (N == (1 << 24)) {
+                    string fname = "results/tree_" + dname + "_" + metodo + ".bin";
+                    writeTree(fname, tree);
+                    cout << "    arbol guardado: " << fname << endl;
                 }
             }
         }
     }
 
-    cout << "=== END ===" << endl;
-
     build_out.close();
+
+   
+    // FASE 2: Consultas solo con N=2^24
+    cout << "\n[CONSULTAS] N = 2^24 = " << (1<<24) << endl;
+
+    for (auto dataset : datasets) {
+
+        string dname = (string(dataset).find("random") != string::npos)
+                       ? "random" : "europa";
+
+        cout << "\n  Dataset: " << dname << endl;
+
+        for (auto metodo : {"nearest", "str"}) {
+
+            string fname = "results/tree_" + dname + "_" + metodo + ".bin";
+
+            // Necesitamos el rootIdx del árbol guardado.
+            // Como la raíz siempre es el último nodo insertado,
+            // calculamos el tamaño del archivo para encontrarlo.
+            ifstream tmp(fname, ios::binary | ios::ate);
+            if (!tmp.is_open()) {
+                cout << "    ERROR: no se encontro " << fname << endl;
+                continue;
+            }
+            int total_nodes = tmp.tellg() / sizeof(Node);
+            int rootIdx = total_nodes - 1;  // la raíz es el último nodo
+            tmp.close();
+
+            cout << "    metodo: " << metodo
+                 << " | nodos totales: " << total_nodes
+                 << " | rootIdx: " << rootIdx << endl;
+
+            for (auto s : Ss) {
+
+                cout << "      s = " << s << flush;
+
+                vector<int> ios_vec;
+                vector<int> pts_vec;
+
+                //100 consultas
+                for (int q = 0; q < 100; q++) {
+
+                    float x = randFloat() * (1.0f - s);
+                    float y = randFloat() * (1.0f - s);
+                    MBR R = {x, x + s, y, y + s};
+
+                    ifstream file(fname, ios::binary);
+                    if (!file.is_open()) {
+                        cout << "\n    ERROR abriendo " << fname << endl;
+                        continue;
+                    }
+
+                    vector<MBR> res;
+                    disk_reads = 0;
+
+                    rangeQuery(file, rootIdx, R, res);
+
+                    ios_vec.push_back(disk_reads);
+                    pts_vec.push_back(res.size());
+                }
+
+                // Calcular estadísticas
+                double avg_io = 0, avg_pts = 0;
+                for (int x : ios_vec) avg_io += x;
+                for (int x : pts_vec) avg_pts += x;
+                avg_io /= ios_vec.size();
+                avg_pts /= pts_vec.size();
+
+                double stddev = 0;
+                for (int x : pts_vec)
+                    stddev += (x - avg_pts) * (x - avg_pts);
+                stddev = sqrt(stddev / pts_vec.size());
+
+                query_out << metodo << "," << dname << "," << s << ","
+                          << avg_io << "," << avg_pts << "," << stddev << "\n";
+
+                cout << " -> avg_io=" << avg_io
+                     << " avg_pts=" << avg_pts << endl;
+            }
+        }
+    }
+
     query_out.close();
 
+    cout << "\n=== END ===" << endl;
     return 0;
 }
