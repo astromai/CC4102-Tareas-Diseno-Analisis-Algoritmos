@@ -66,7 +66,7 @@ mkdir -p data results
 
 - La carpeta `data` debe contener los archivos binarios de entrada: `random.bin` y `europa.bin`.
 - La carpeta `results` debe existir y comenzar vacía.
-- Los archivos binarios deben obtenerse desde el repositorio externo de datos: `<https://github.com/claugaete/tarea1-cc4102-2026-1/releases/tag/Datos>`.
+- Los archivos binarios deben obtenerse desde el repositorio externo de datos [aquí](https://github.com/claugaete/tarea1-cc4102-2026-1/releases/tag/Datos).
 
 1. Ejecutar experimentos
 
@@ -217,7 +217,7 @@ Controla toda la ejecución del programa:
 
 ### Manejo de la raíz (detalle importante)
 
-La raíz se agrega al final del vector , por lo que se comienza a leer desde el último Nodo listado.
+La raíz se agrega al final del vector, para luego intercambiarse con el primer Nodo, de forma que la raíz tenga el índice 0.
 
 ---
 
