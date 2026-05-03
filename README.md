@@ -15,6 +15,36 @@ El objetivo es comparar su rendimiento en:
 
 ---
 
+## Consideraciones Iniciales
+
+Antes de ejecutar el proyecto, es necesario contar con las siguientes dependencias instaladas:
+
+- `g++` para compilar el código fuente en C++
+- `Python 3` para ejecutar los scripts de análisis y gráficos
+- `Pandas` para procesar los resultados generados
+- `Matplotlib` para crear las visualizaciones finales
+
+Estas herramientas son requeridas para poder ejecutar correctamente tanto la compilación como la generación de resultados y gráficos.
+
+### Instalación de dependencias del sistema
+
+```bash
+sudo apt install g++ gdb make
+sudo apt install python3 python3-pip python3-venv
+```
+
+### Crear un entorno virtual de Python
+
+Se recomienda crear un entorno virtual antes de instalar las librerías necesarias para el análisis y los gráficos:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install pandas matplotlib
+```
+
+---
+
 ## Compilación
 
 Compilar el proyecto con:
@@ -27,6 +57,16 @@ g++ src/*.cpp -o rtree -O2 -std=c++17
 
 
 ## Ejecución completa
+
+Antes de ejecutar el programa, cree las carpetas requeridas y prepare los datasets:
+
+```bash
+mkdir -p data results
+```
+
+- La carpeta `data` debe contener los archivos binarios de entrada: `random.bin` y `europa.bin`.
+- La carpeta `results` debe existir y comenzar vacía.
+- Los archivos binarios deben obtenerse desde el repositorio externo de datos: `<https://github.com/claugaete/tarea1-cc4102-2026-1/releases/tag/Datos>`.
 
 1. Ejecutar experimentos
 
@@ -177,13 +217,7 @@ Controla toda la ejecución del programa:
 
 ### Manejo de la raíz (detalle importante)
 
-La raíz se agrega al final del vector y luego se intercambia con la posición 0.  
-Posteriormente, se actualizan todos los punteros a hijos para mantener consistencia.
-
-Esto garantiza que:
-
-- la raíz esté en índice 0
-- los índices de los nodos sean correctos
+La raíz se agrega al final del vector , por lo que se comienza a leer desde el último Nodo listado.
 
 ---
 
